@@ -1,0 +1,9 @@
+*~
+*.pyc
+*.out
+*.log
+*.swp
+*.zip
+*.ipynb
+.DS_Store
+record/*
