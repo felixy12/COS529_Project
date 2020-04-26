@@ -24,24 +24,39 @@ class BasicModel():
         self.best_acc = 0.
 
     def set_network(self, opt):
-         
-        self.network = basenet.ResNet50(n_classes=opt['output_dim'],
-                                        pretrained=True,
-                                        dropout=opt['dropout']).to(self.device)
-        
+        if opt['input_type'] == 'latefusion':         
+            print('Initializing model which takes in two frames')
+            self.network = basenet.ResNet50(n_classes=opt['output_dim'],
+                                            pretrained=True,
+                                            dropout=opt['dropout']).to(self.device)
+        elif opt['input_type'] == 'randomframe' or opt['input_type'] == 'centerframe':
+            print('Initializing model which takes in one frame')
+            self.network = basenet.ResNet50_base(n_classes=opt['output_dim'],
+                                                 pretrained=True,         
+                                                 dropout=opt['dropout']).to(self.device)
+
     def forward(self, x):
         out, feature = self.network(x)
-
         return out, feature
 
     def set_data(self, opt):
         """Set up the dataloaders"""
         
         data_setting = opt['data_setting']
-        
-        self.loader_train = load_data.create_dataset_actual(data_setting['path'], data_setting['train_params'], load_data.MyDataset_latefusion)
-        self.loader_test = load_data.create_dataset_actual(data_setting['path'], data_setting['test_params'], load_data.MyDataset_latefusion, split='test')
-
+        if opt['input_type'] == 'latefusion':
+            print('Feeding in first and last frames as input')
+            loader_class = load_data.MyDataset_latefusion 
+            dataset_kwargs = {}
+        elif opt['input_type'] == 'randomframe':
+            print('Feeding in a random frame as input')
+            loader_class = load_data.MyDataset_singleframe
+            dataset_kwargs = {'get_random':True} 
+        elif opt['input_type'] == 'centerframe':
+            print('Feeding in center frame as input')
+            loader_class = load_data.MyDataset_singleframe
+            dataset_kwargs = {'get_random':False}
+        self.loader_train = load_data.create_dataset_actual(data_setting['path'], data_setting['train_params'], loader_class, kwargs=dataset_kwargs) 
+        self.loader_test = load_data.create_dataset_actual(data_setting['path'], data_setting['test_params'],  loader_class, kwargs=dataset_kwargs)
 
         
     def set_optimizer(self, opt):

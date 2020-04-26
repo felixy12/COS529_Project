@@ -11,10 +11,10 @@ from PIL import Image
 import torchvision.transforms as T
 import pickle
 import cv2
-
+import pdb
 
 class MyDataset_latefusion(Dataset):
-    def __init__(self, list_IDs, labels, transform=T.ToTensor()):
+    def __init__(self, list_IDs, labels, transform=T.ToTensor(), **kwargs):
         self.labels = labels
         self.list_IDs = list_IDs
         self.transform = transform
@@ -61,11 +61,13 @@ class MyDataset_latefusion(Dataset):
         
         return X,y
 
-class MyDataset_randomframe(Dataset):
-    def __init__(self, list_IDs, labels, transform=T.ToTensor()):
+class MyDataset_singleframe(Dataset):
+    def __init__(self, list_IDs, labels, transform=T.ToTensor(), **kwargs):
         self.labels = labels
         self.list_IDs = list_IDs
+        self.get_random = kwargs['get_random']
         self.transform = transform
+        
 
     def __len__(self):
         return len(self.list_IDs)
@@ -79,19 +81,25 @@ class MyDataset_randomframe(Dataset):
         frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
         buf = np.empty((frameHeight, frameWidth, 3), np.dtype('uint8'))
-        
-        f = np.random.randint(frameCount-1)
+        f = np.random.randint(frameCount-1) if self.get_random else frameCount//2
         cap.set(cv2.CAP_PROP_FRAME_COUNT, f)
         ret, buf = cap.read()
-        buf = cv2.cvtColor(buf[0], cv2.COLOR_BGR2RGB)
+        buf = cv2.cvtColor(buf, cv2.COLOR_BGR2RGB)
         X = torch.zeros((3,224,224))
-        X = self.transform(Image.fromarray(buf))
-
+        t = self.transform(Image.fromarray(buf))
+        w, h = t.shape[1:]
+        if w>224:
+            a1 = np.random.randint(w-224)
+            a2 = np.random.randint(h-224)
+        else:
+            a1=0
+            a2=0
+        X = t[:, a1:a1+224, a2:a2+224]
         y = self.labels[ID]
 
         return X,y
         
-def create_dataset_actual(path, params, dataset, number=0, split='train'):
+def create_dataset_actual(path, params, dataset, number=0, split='train', kwargs={}):
     
     classes = open(path+'/ucfTrainTestlist/classInd.txt', 'r')
     split_file = open(path+'/ucfTrainTestlist/'+split+'list01.txt', 'r').readlines()
@@ -123,21 +131,21 @@ def create_dataset_actual(path, params, dataset, number=0, split='train'):
     
     if split=='train':
         transform = T.Compose([
-            T.Resize(1024),
+            T.Resize(224),
             T.ToTensor(),
             normalize
         ])
 
     else:
         transform = T.Compose([
-            T.Resize(1024),
+            T.Resize(224),
             T.CenterCrop(224),
             T.ToTensor(),
             normalize
         ])
        
     #print(transform)    
-    dset = dataset(list_ids, attr, transform)
+    dset = dataset(list_ids, attr, transform, **kwargs)
     loader = DataLoader(dset, **params)
 
     return loader
