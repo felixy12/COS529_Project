@@ -56,7 +56,7 @@ class BasicModel():
             loader_class = load_data.MyDataset_singleframe
             dataset_kwargs = {'get_random':False}
         self.loader_train = load_data.create_dataset_actual(data_setting['path'], data_setting['train_params'], loader_class, kwargs=dataset_kwargs) 
-        self.loader_test = load_data.create_dataset_actual(data_setting['path'], data_setting['test_params'],  loader_class, kwargs=dataset_kwargs)
+        self.loader_test = load_data.create_dataset_actual(data_setting['path'], data_setting['test_params'],  loader_class, split='test', kwargs=dataset_kwargs)
 
         
     def set_optimizer(self, opt):
@@ -87,6 +87,8 @@ class BasicModel():
         self.network.train()
         
         train_loss = 0
+        output_list = []
+        target_list = []
         for i, (images, targets) in enumerate(loader):
             images, targets = images.to(self.device), targets.to(self.device)
             #print(images.shape)
@@ -104,8 +106,12 @@ class BasicModel():
                 print('Training epoch {}: [{}|{}], loss:{}'.format(
                       self.epoch, i+1, len(loader), loss.item()), flush=True)
         
+            output_list.append(outputs)
+            target_list.append(targets)
         #self.log_result('Train epoch', {'loss': train_loss/len(loader)}, self.epoch)
         self.epoch += 1
+        
+        return train_loss, torch.cat(output_list), torch.cat(target_list)
 
     def _test(self, loader):
         """Compute model output on test set"""
@@ -143,22 +149,21 @@ class BasicModel():
         """
         
         start_time = datetime.now()
-        self._train(self.loader_train)
+        train_loss, train_output, targets = self._train(self.loader_train)
+        train_predict_prob = self.inference(train_output)
+        train_acc = utils.get_accuracy(train_predict_prob, targets.cpu().numpy(), k=3)
         self.save_model(os.path.join(self.save_path, 'current.pth'))
         
-        test_loss, test_output, _ , targets= self._test(self.loader_test)
+        test_loss, test_output, _ , targets = self._test(self.loader_test)
         test_predict_prob = self.inference(test_output)
-        
-
-        acc = utils.get_accuracy(test_predict_prob, targets.cpu().numpy(), k=3)
-    
-        if acc > self.best_acc:
-            self.best_acc = acc
+        test_acc = utils.get_accuracy(test_predict_prob, targets.cpu().numpy(), k=3)
+        if test_acc > self.best_acc:
+            self.best_acc = test_acc
             self.save_model(os.path.join(self.save_path,'best.pth'))
        
 
         duration = datetime.now() - start_time
-        print('Finish training epoch {}, time used: {}, test_acc: {}'.format(self.epoch, duration, acc))
+        print('Finish training epoch {}, time used: {}, train_acc: {}, test_acc: {}'.format(self.epoch, duration, train_acc, test_acc))
 
     
     def test(self):
@@ -169,5 +174,3 @@ class BasicModel():
         
 
         acc = utils.get_accuracy(test_predict_prob, targets.cpu().numpy(), k=3)
-
-            
