@@ -16,5 +16,5 @@ log=/n/fs/visualai-scr/felixy/Classes/COS529/COS529_Project/slurms/felixy/report
 exec &> >(tee -a "$log")
 
 source activate cos529
-cd /n/fs/visualai-scr/felixy/Classes/COS529/COS529_Project/
+cd /n/fs/visualai-scr/felixy/Classes/COS529/COS529_Project/ResNet2D/
 python3 main.py --experiment ${EXPNAME} --input_type ${INPUTTYPE}

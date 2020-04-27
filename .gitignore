@@ -6,4 +6,6 @@
 *.zip
 *.ipynb
 .DS_Store
-record/*
+*.pth
+ResNet2D/record/*
+I3D/output/*

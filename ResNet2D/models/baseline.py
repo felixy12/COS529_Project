@@ -136,8 +136,10 @@ class BasicModel():
 
         return test_loss, torch.cat(output_list), torch.cat(feature_list), torch.cat(target_list)
 
-    def inference(self, output):
+    def inference(self, output, detach=False):
         predict_prob = torch.sigmoid(output)
+        if detach:
+            return predict_prob.cpu().detach().numpy()
         return predict_prob.cpu().numpy()
     
     def save_model(self, path):
@@ -150,7 +152,7 @@ class BasicModel():
         
         start_time = datetime.now()
         train_loss, train_output, targets = self._train(self.loader_train)
-        train_predict_prob = self.inference(train_output)
+        train_predict_prob = self.inference(train_output, True)
         train_acc = utils.get_accuracy(train_predict_prob, targets.cpu().numpy(), k=3)
         self.save_model(os.path.join(self.save_path, 'current.pth'))
         
