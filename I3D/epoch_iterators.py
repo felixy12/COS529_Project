@@ -105,7 +105,7 @@ def train_epoch(config, model, criterion, optimizer, device,
                 max_val = float(clip_for_display.max())
                 clip_for_display.clamp_(min=min_val, max=max_val)
                 clip_for_display.add_(-min_val).div_(max_val - min_val + 1e-5)
-                summary_writer.add_video('train_clips/{:04d}'.format(example_idx), clip_for_display.unsqueeze(0), global_step)
+                #summary_writer.add_video('train_clips/{:04d}'.format(example_idx), clip_for_display.unsqueeze(0), global_step)
 
     # Epoch statistics
     epoch_duration = float(time.time() - epoch_start_time)
@@ -177,7 +177,7 @@ def validation_epoch(config, model, criterion, device, data_loader, epoch, summa
                 max_val = float(clip_for_display.max())
                 clip_for_display.clamp_(min=min_val, max=max_val)
                 clip_for_display.add_(-min_val).div_(max_val - min_val + 1e-5)
-                summary_writer.add_video('validation_clips/{:04d}'.format(example_idx), clip_for_display.unsqueeze(0), epoch*steps_in_epoch)
+                #summary_writer.add_video('validation_clips/{:04d}'.format(example_idx), clip_for_display.unsqueeze(0), epoch*steps_in_epoch)
 
     # Epoch statistics
     epoch_duration = float(time.time() - epoch_start_time)

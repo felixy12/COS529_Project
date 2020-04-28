@@ -8,7 +8,6 @@ import math
 import functools
 import json
 import copy
-
 from utils.utils import load_value_file
 
 ##########################################################################################
@@ -88,11 +87,10 @@ def make_dataset(root_path, annotation_path, subset, n_samples_for_each_video,
         if not os.path.exists(video_path):
             continue
 
-        n_frames_file_path = os.path.join(video_path, 'n_frames')
-        if not os.path.exists(n_frames_file_path):
-           raise FileNotFoundError('n_frames_file_path does not exist: {}'.format(n_frames_file_path))
-
-        n_frames = int(load_value_file(n_frames_file_path))
+        #n_frames_file_path = os.path.join(video_path, 'n_frames')
+        #if not os.path.exists(n_frames_file_path):
+        #   raise FileNotFoundError('n_frames_file_path does not exist: {}'.format(n_frames_file_path))
+        n_frames = len([x for x in os.listdir(video_path) if 'image' in x and x[0] != '.'])
         if n_frames <= 0:
             continue
 

@@ -113,7 +113,7 @@ validation_transforms = {
     'temporal': TemporalRandomCrop(config.sample_duration),
     'target':   ClassLabel()
 }
-pdb.set_trace()
+
 ####################################################################
 ####################################################################
 # Setup of data pipeline
@@ -140,7 +140,6 @@ if config.lr_scheduler == 'plateau':
 else:
     milestones = [int(x) for x in config.lr_scheduler_milestones.split(',')]
     scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones, config.lr_scheduler_gamma)
-
 ####################################################################
 ####################################################################
 
