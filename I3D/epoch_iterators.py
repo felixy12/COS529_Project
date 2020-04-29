@@ -144,6 +144,8 @@ def validation_epoch(config, model, criterion, device, data_loader, epoch, summa
         # Move inputs to GPU memory
         clips   = clips.to(device)
         targets = targets.to(device)
+        if config.model == 'i3d':
+            targets = torch.unsqueeze(targets, -1)
 
         # Feed-forward through the network
         logits = model.forward(clips)
