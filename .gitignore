@@ -9,3 +9,5 @@
 *.pth
 ResNet2D/record/*
 I3D/output/*
+ipynb/
+YOLO/weights/
