@@ -37,7 +37,7 @@ def train_epoch(config, model, criterion, optimizer, device,
 
     epoch_start_time = time.time()
 
-    for step, (clips, targets) in enumerate(data_loader):
+    for step, (clips, scene_feats, targets) in enumerate(data_loader):
 
         start_time = time.time()
 
@@ -137,7 +137,7 @@ def validation_epoch(config, model, criterion, device, data_loader, epoch, summa
 
     epoch_start_time = time.time()
 
-    for step, (clips, targets) in enumerate(data_loader):
+    for step, (clips, scene_feats, targets) in enumerate(data_loader):
 
         start_time = time.time()
 

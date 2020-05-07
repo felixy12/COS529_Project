@@ -22,9 +22,12 @@ def get_training_set(config, spatial_transform, temporal_transform, target_trans
             config.video_path,
             config.annotation_path,
             'training',
+            use_scene=config.use_scene,
+            scene_path=config.scene_path,
             spatial_transform=spatial_transform,
             temporal_transform=temporal_transform,
-            target_transform=target_transform)
+            target_transform=target_transform,
+            subsample_rate=config.subsample_rate)
     return training_data
 
 
@@ -44,11 +47,14 @@ def get_validation_set(config, spatial_transform, temporal_transform, target_tra
             config.video_path,
             config.annotation_path,
             'validation',
-            config.num_val_samples,
-            spatial_transform,
-            temporal_transform,
-            target_transform,
-            sample_duration=config.sample_duration)
+            use_scene=config.use_scene,
+            scene_path=config.scene_path,
+            n_samples_for_each_video=config.num_val_samples,
+            spatial_transform=spatial_transform,
+            temporal_transform=temporal_transform,
+            target_transform=target_transform,
+            sample_duration=config.sample_duration,
+            subsample_rate=config.subsample_rate)
     return validation_data
 
 ##########################################################################################

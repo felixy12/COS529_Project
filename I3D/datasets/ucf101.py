@@ -4,6 +4,7 @@ import torch
 import torch.utils.data as data
 from PIL import Image
 import os
+import pickle as pkl
 import math
 import functools
 import json
@@ -65,7 +66,7 @@ def get_video_names_and_annotations(data, subset):
 ##########################################################################################
 
 def make_dataset(root_path, annotation_path, subset, n_samples_for_each_video,
-                 sample_duration):
+                 sample_duration, subsample_rate=1):
 
     data = load_annotation_data(annotation_path)
     video_names, annotations = get_video_names_and_annotations(data, subset)
@@ -108,7 +109,7 @@ def make_dataset(root_path, annotation_path, subset, n_samples_for_each_video,
             sample['label'] = -1
 
         if n_samples_for_each_video == 1:
-            sample['frame_indices'] = list(range(1, n_frames + 1))
+            sample['frame_indices'] = list(range(1, n_frames + 1, subsample_rate))
             dataset.append(sample)
         else:
             if n_samples_for_each_video > 1:
@@ -149,21 +150,29 @@ class UCF101(data.Dataset):
                  root_path,
                  annotation_path,
                  subset,
+                 use_scene=False,
+                 scene_path=None,
                  n_samples_for_each_video=1,
                  spatial_transform=None,
                  temporal_transform=None,
                  target_transform=None,
                  sample_duration=16,
-                 get_loader=get_default_video_loader):
+                 get_loader=get_default_video_loader,
+                 subsample_rate=1):
 
+        if use_scene and scene_path is None:
+            raise ValueError('Must specify a scene path if use_scene flag is raised.')
+        self.scene_path = scene_path
+        self.use_scene = use_scene
         self.data, self.class_names = make_dataset(
             root_path, annotation_path, subset, n_samples_for_each_video,
-            sample_duration)
+            sample_duration, subsample_rate)
 
         self.spatial_transform = spatial_transform
         self.temporal_transform = temporal_transform
         self.target_transform = target_transform
         self.loader = get_loader()
+
 
     def __getitem__(self, index):
         """
@@ -187,8 +196,13 @@ class UCF101(data.Dataset):
         target = self.data[index]
         if self.target_transform is not None:
             target = self.target_transform(target)
-
-        return clip, target
+        if self.use_scene: 
+            split_path = path.split('/')
+            scene_path = os.path.join(self.scene_path, split_path[-2], split_path[-1] + '.pkl')
+            scene_feat = pkl.load(open(scene_path, 'rb')).squeeze()
+        else:
+            scene_feat = 0 # 0 is just a placeholder since no feature loaded.
+        return clip, scene_feat, target
 
     def __len__(self):
         return len(self.data)

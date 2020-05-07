@@ -23,7 +23,7 @@ from datetime import datetime
 import torch.nn as nn
 
 from transforms.spatial_transforms import Compose, Normalize, RandomHorizontalFlip, MultiScaleRandomCrop, ToTensor, CenterCrop
-from transforms.temporal_transforms import TemporalRandomCrop
+from transforms.temporal_transforms import TemporalRandomCrop, TemporalCenterCrop
 from transforms.target_transforms import ClassLabel
 
 from epoch_iterators import train_epoch, validation_epoch
@@ -110,7 +110,7 @@ validation_transforms = {
     'spatial':  Compose([CenterCrop(config.spatial_size),
                          ToTensor(config.norm_value),
                          norm_method]),
-    'temporal': TemporalRandomCrop(config.sample_duration),
+    'temporal': TemporalCenterCrop(config.sample_duration),
     'target':   ClassLabel()
 }
 

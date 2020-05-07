@@ -8,6 +8,7 @@ def parse_opts():
     # Paths
     parser.add_argument('--video_path', type=str)#, required=True, help='Path to location of dataset videos')
     parser.add_argument('--annotation_path', type=str, required=False, help='Path to location of dataset annotation file')
+    parser.add_argument('--scene_path', type=str, required=False, help='Path to location of scene features file')
     parser.add_argument('--save_dir', default='./output/', type=str, help='Where to save training outputs.')
 
     # Dataset
@@ -17,6 +18,8 @@ def parse_opts():
     parser.add_argument('--no_dataset_mean', action='store_true', help='Dont use the dataset mean but normalize to zero mean')
     parser.add_argument('--no_dataset_std', action='store_true', help='Dont use the dataset std but normalize to unity std')
     parser.add_argument('--num_classes', default=400, type=int, help= 'Number of classes (activitynet: 200, kinetics: 400, ucf101: 101, hmdb51: 51)')
+    parser.add_argument('--subsample_rate', default=1, type=int, help='Frame stride in the temporal dimension. i.e. rate=2 means we use every other frame')
+    parser.add_argument('--use_scene', action='store_true', help='Whether to use scene information or not.')
     parser.set_defaults(no_dataset_std=True)
 
     # Preprocessing pipeline

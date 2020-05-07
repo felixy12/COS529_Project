@@ -142,7 +142,7 @@ def grey_out_video(frame_dir):
             out_frame_path = os.path.join(out_frame_dir, frame_name)
             greyed_image_list[i].save(out_frame_path)
     inference_time = datetime.timedelta(seconds=time.time() - prev_time)
-    print ('Done processing Video {}. Time Taken: {}'.format(frame_dir.split('/')[-1], inference_time))
+    print ('Done processing Video {}. Time Taken: {}'.format(frame_dir.split('/')[-1], inference_time), flush=True)
     return float(total_frames_w_person)/len(frame_names)
 
 
@@ -157,7 +157,7 @@ for class_name in UCF_classes:
     for video_name in video_names:
         frame_dir   = os.path.join(video_dir, video_name)
         video_list.append(frame_dir)
-print('Done. Processing {} videos'.format(len(video_list)))
+print('Done. Processing {} videos'.format(len(video_list)), flush=True)
 
 
 # In[10]:
