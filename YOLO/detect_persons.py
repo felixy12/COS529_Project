@@ -166,7 +166,11 @@ print('Done. Processing {} videos'.format(len(video_list)), flush=True)
 person_fraction_fname = 'person_fraction.txt'
 for frame_dir in video_list:
     person_fraction_file = open(person_fraction_fname, 'a+')
-    total_frames_w_person = grey_out_video(frame_dir)
+    try:
+        total_frames_w_person = grey_out_video(frame_dir)
+    except:
+        print('Failed to process Video {}. Skipping.'.format(frame_dir.split('/')[-1]))
+        total_frames_w_person = 0.0
     if total_frames_w_person is not None: 
         person_fraction_file.write('{}\t{}\n'.format(frame_dir.split('/')[-1], total_frames_w_person))
     person_fraction_file.close()
