@@ -46,12 +46,13 @@ def train_epoch(config, model, criterion, optimizer, device,
 
         # Move inputs to GPU memory
         clips = clips.to(device)
+        scene_feats = scene_feats.to(device)
         targets = targets.to(device)
-        if config.model == 'i3d':
-            targets = torch.unsqueeze(targets, -1)
+        #if config.model == 'i3d':
+        #    targets = torch.unsqueeze(targets, -1)
 
         # Feed-forward through the network
-        logits = model.forward(clips)
+        logits = model.forward(clips, scene_feats)
 
         if epoch == 0 and step == 0:
             # Sanity check
@@ -143,12 +144,13 @@ def validation_epoch(config, model, criterion, device, data_loader, epoch, summa
 
         # Move inputs to GPU memory
         clips   = clips.to(device)
+        scene_feats = scene_feats.to(device)
         targets = targets.to(device)
-        if config.model == 'i3d':
-            targets = torch.unsqueeze(targets, -1)
+        #if config.model == 'i3d':
+        #    targets = torch.unsqueeze(targets, -1)
 
         # Feed-forward through the network
-        logits = model.forward(clips)
+        logits = model.forward(clips, scene_feats)
 
         _, preds = torch.max(logits, 1)
         loss = criterion(logits, targets)

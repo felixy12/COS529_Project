@@ -39,7 +39,8 @@ def get_model(config):
             spatial_squeeze=True,
             final_endpoint='logits',
             in_channels=3,
-            dropout_keep_prob=config.dropout_keep_prob
+            dropout_keep_prob=config.dropout_keep_prob,
+            use_scene=config.use_scene
         )
 
     if 'cuda' in config.device:

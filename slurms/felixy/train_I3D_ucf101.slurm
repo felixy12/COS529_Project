@@ -9,7 +9,7 @@
 #SBATCH --mem=32G                      # amount of memory needed
 #SBATCH --time=48:00:00       
 
-
+USE_SCENE=$1
 source activate cos529
 cd /n/fs/visualai-scr/felixy/Classes/COS529/COS529_Project/I3D/
-bash train_I3D_ucf101.sh
+bash train_I3D_ucf101.sh ${USE_SCENE}

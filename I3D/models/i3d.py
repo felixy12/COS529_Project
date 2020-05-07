@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import pdb
 import numpy as np
 ####################################################################
 ####################################################################
@@ -37,6 +37,43 @@ class MaxPool3dSamePadding(nn.MaxPool3d):
         x = F.pad(x, pad)
 
         return super(MaxPool3dSamePadding, self).forward(x)
+
+####################################################################
+####################################################################
+
+class scene_MLP(nn.Module):
+    def __init__(self, in_channels,
+                 hidden_channels,
+                 output_channels,
+                 activation_fn=F.relu,
+                 use_bias=True,
+                 name='mlp'):
+        super(scene_MLP, self).__init__()
+        self.in_channels = in_channels
+        self.hidden_channels = hidden_channels
+        self.output_channels = output_channels
+        self.activation_fn = F.relu
+        self.use_bias = use_bias
+        self.fc_layers = self._make_fc_layers() 
+        self.activation = activation_fn
+        self.name = name
+
+    def _make_fc_layers(self):
+        D = self.in_channels 
+        fc_layers = nn.ModuleList()
+        for hid in self.hidden_channels:
+            fc_layers.append(nn.Linear(D, hid, bias=self.use_bias)) 
+            D = hid
+        fc_layers.append(nn.Linear(D, self.output_channels, bias=self.use_bias))
+        return fc_layers
+
+    def forward(self, x_vid, x_scene):
+        x_vid = x_vid.squeeze()
+        x = torch.cat([x_vid, x_scene], dim=1)
+        for fc_layer in self.fc_layers[:-1]:
+            x = self.activation(fc_layer(x))
+        x = self.fc_layers[-1](x)
+        return x
 
 ####################################################################
 ####################################################################
@@ -216,7 +253,7 @@ class InceptionI3D(nn.Module):
     )
 
     def __init__(self, num_classes=400, spatial_squeeze=True, final_endpoint='logits',
-                 name='inception_i3d', in_channels=3, dropout_keep_prob=1.0):
+                 name='inception_i3d', in_channels=3, dropout_keep_prob=1.0, use_scene=False):
 
         """Initializes I3D model instance.
         Args:
@@ -245,6 +282,7 @@ class InceptionI3D(nn.Module):
         self._spatial_squeeze = spatial_squeeze
         self._final_endpoint  = final_endpoint
         self._dropout_rate    = 1.0 - dropout_keep_prob
+        self.use_scene        = use_scene
 
         if self._final_endpoint not in self.VALID_ENDPOINTS:
             raise ValueError('Unknown final endpoint %s' % self._final_endpoint)
@@ -327,11 +365,14 @@ class InceptionI3D(nn.Module):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()
 
-    def forward(self, x):
+    def forward(self, x, scene_feats):
         for layer_name, layer in self.layers.items():
-            x = layer(x)
+            if layer_name == 'logits' and self.use_scene:
+                x = layer(x, scene_feats)
+            else:
+                x = layer(x)
         if self._spatial_squeeze:
-            x = x.squeeze(3).squeeze(3)
+            x = x.squeeze()
         return x  # logits
 
     def trainable_params(self):
@@ -343,10 +384,14 @@ class InceptionI3D(nn.Module):
 
     def replace_logits(self, num_classes, device='cuda:0'):
         self._num_classes = num_classes
-        self.layers['logits'] = Unit3D(
-            in_channels=384+384+128+128, output_channels=num_classes,
-            kernel_size=[1, 1, 1], padding=0, activation_fn=None,
-            use_batch_norm=False, use_bias=True, name=self._model_name+'logits')
+        if self.use_scene:
+            self.layers['logits'] = scene_MLP(in_channels=1024+2048, hidden_channels=[1024], 
+                output_channels=num_classes, use_bias=True, name=self._model_name+'logits')
+        else:
+            self.layers['logits'] = Unit3D(
+                in_channels=384+384+128+128, output_channels=num_classes,
+                kernel_size=[1, 1, 1], padding=0, activation_fn=None,
+                use_batch_norm=False, use_bias=True, name=self._model_name+'logits')
 
         self.logits = self.layers['logits']
 
@@ -362,9 +407,8 @@ class InceptionI3D(nn.Module):
 def get_fine_tuning_parameters(model, ft_prefixes):
 
     assert isinstance(ft_prefixes, str)
-
-    if ft_prefixes == '':
-        return model.parameters()
+    #if ft_prefixes == '':
+    #    return model.parameters()
 
     print('#'*60)
     print('Setting finetuning layer prefixes: {}'.format(ft_prefixes))
@@ -375,7 +419,7 @@ def get_fine_tuning_parameters(model, ft_prefixes):
     for param_name, param in model.named_parameters():
         for prefix in ft_prefixes:
             if param_name.startswith(prefix):
-                print('  Finetuning parameter: {}'.format(param_name))
+                #print('  Finetuning parameter: {}'.format(param_name))
                 parameters.append({'params': param, 'name': param_name})
                 param_names.append(param_name)
 

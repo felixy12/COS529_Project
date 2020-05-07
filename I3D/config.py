@@ -19,7 +19,8 @@ def parse_opts():
     parser.add_argument('--no_dataset_std', action='store_true', help='Dont use the dataset std but normalize to unity std')
     parser.add_argument('--num_classes', default=400, type=int, help= 'Number of classes (activitynet: 200, kinetics: 400, ucf101: 101, hmdb51: 51)')
     parser.add_argument('--subsample_rate', default=1, type=int, help='Frame stride in the temporal dimension. i.e. rate=2 means we use every other frame')
-    parser.add_argument('--use_scene', action='store_true', help='Whether to use scene information or not.')
+    parser.add_argument('--use_scene', default=0, type=int, help='Whether to use scene information or not.')
+    parser.add_argument('--use_bb', default=0, type=int, help='Whether to use bounding boxes of persons. For logging purposes.')
     parser.set_defaults(no_dataset_std=True)
 
     # Preprocessing pipeline

@@ -45,7 +45,7 @@ def write_config(config, json_path):
 
 def output_subdir(config):
     prefix = time.strftime('%Y%m%d_%H%M')
-    subdir = "{}_{}_{}_lr{:.3f}".format(prefix, config.dataset, config.model, config.learning_rate)
+    subdir = "{}_{}_{}".format(prefix, 'UseScene{}'.format(config.use_scene), 'UseBB{}'.format(config.use_bb))
     return os.path.join(config.save_dir, subdir)
 
 def init_cropping_scales(config):
