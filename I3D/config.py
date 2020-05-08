@@ -18,7 +18,6 @@ def parse_opts():
     parser.add_argument('--no_dataset_mean', action='store_true', help='Dont use the dataset mean but normalize to zero mean')
     parser.add_argument('--no_dataset_std', action='store_true', help='Dont use the dataset std but normalize to unity std')
     parser.add_argument('--num_classes', default=400, type=int, help= 'Number of classes (activitynet: 200, kinetics: 400, ucf101: 101, hmdb51: 51)')
-    parser.add_argument('--subsample_rate', default=1, type=int, help='Frame stride in the temporal dimension. i.e. rate=2 means we use every other frame')
     parser.add_argument('--use_scene', default=0, type=int, help='Whether to use scene information or not.')
     parser.add_argument('--use_bb', default=0, type=int, help='Whether to use bounding boxes of persons. For logging purposes.')
     parser.set_defaults(no_dataset_std=True)
@@ -26,6 +25,7 @@ def parse_opts():
     # Preprocessing pipeline
     parser.add_argument('--spatial_size', default=224, type=int, help='Height and width of inputs')
     parser.add_argument('--sample_duration', default=64, type=int, help='Temporal duration of inputs')
+    parser.add_argument('--subsample_rate', default=1, type=int, help='Frame stride in the temporal dimension. i.e. rate=2 means we use every other frame')
     parser.add_argument('--initial_scale', default=1.0, type=float, help='Initial scale for multiscale cropping')
     parser.add_argument('--num_scales', default=5, type=int, help='Number of scales for multiscale cropping')
     parser.add_argument('--scale_step', default=0.84089641525, type=float, help='Scale step for multiscale cropping')
